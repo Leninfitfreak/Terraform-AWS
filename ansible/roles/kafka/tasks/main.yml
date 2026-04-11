@@ -1,0 +1,120 @@
+---
+- name: Validate required variables
+  assert:
+    that:
+      - kafka_advertised_host is defined
+      - kafka_advertised_host | length > 0
+    fail_msg: "kafka_advertised_host must be provided (Terraform kafka_private_ip or NLB DNS)"
+
+- name: Install OS packages (Debian/Ubuntu)
+  apt:
+    name:
+      - tar
+      - gzip
+      - unzip
+      - openjdk-17-jre-headless
+    update_cache: true
+  when: ansible_os_family == "Debian"
+
+- name: Install OS packages (Amazon Linux / RHEL)
+  yum:
+    name:
+      - java-17-amazon-corretto-headless
+      - tar
+      - gzip
+      - unzip
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Create kafka user
+  user:
+    name: "{{ kafka_service_user }}"
+    system: true
+    shell: /usr/sbin/nologin
+
+- name: Create directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ kafka_service_user }}"
+    group: "{{ kafka_service_group }}"
+    mode: "0755"
+  loop:
+    - "{{ kafka_install_dir }}"
+    - "{{ kafka_data_dir }}"
+    - "{{ kafka_log_dir }}"
+
+- name: Download Kafka
+  get_url:
+    url: "https://archive.apache.org/dist/kafka/{{ kafka_version }}/kafka_{{ scala_version }}-{{ kafka_version }}.tgz"
+    dest: "/tmp/kafka.tgz"
+    mode: "0644"
+
+- name: Extract Kafka
+  unarchive:
+    src: "/tmp/kafka.tgz"
+    dest: "/opt"
+    remote_src: true
+    creates: "/opt/kafka_{{ scala_version }}-{{ kafka_version }}"
+
+- name: Symlink Kafka install dir
+  file:
+    src: "/opt/kafka_{{ scala_version }}-{{ kafka_version }}"
+    dest: "{{ kafka_install_dir }}"
+    state: link
+    force: true
+
+- name: Ensure Kafka runtime logs directory
+  file:
+    path: "{{ kafka_install_dir }}/logs"
+    state: directory
+    owner: "{{ kafka_service_user }}"
+    group: "{{ kafka_service_group }}"
+    mode: "0755"
+- name: Template server.properties
+  template:
+    src: server.properties.j2
+    dest: "{{ kafka_install_dir }}/config/server.properties"
+    owner: "{{ kafka_service_user }}"
+    group: "{{ kafka_service_group }}"
+    mode: "0644"
+  notify: restart kafka
+
+- name: Format KRaft storage (first run)
+  command: "{{ kafka_install_dir }}/bin/kafka-storage.sh format -t {{ kafka_cluster_id }} -c {{ kafka_install_dir }}/config/server.properties"
+  args:
+    creates: "{{ kafka_data_dir }}/meta.properties"
+- name: Create systemd unit
+  copy:
+    dest: /etc/systemd/system/kafka.service
+    content: |
+      [Unit]
+      Description=Apache Kafka
+      After=network.target
+
+      [Service]
+      Type=simple
+      User={{ kafka_service_user }}
+      Group={{ kafka_service_group }}
+      Environment="KAFKA_HEAP_OPTS={{ kafka_heap_opts }}"
+      Environment="KAFKA_JVM_PERFORMANCE_OPTS={{ kafka_jvm_opts }}"
+      ExecStart={{ kafka_install_dir }}/bin/kafka-server-start.sh {{ kafka_install_dir }}/config/server.properties
+      ExecStop={{ kafka_install_dir }}/bin/kafka-server-stop.sh
+      Restart=on-failure
+      LimitNOFILE=100000
+
+      [Install]
+      WantedBy=multi-user.target
+  notify: restart kafka
+
+- name: Ensure kafka service enabled
+  systemd:
+    name: kafka
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Health check (broker api)
+  shell: "{{ kafka_install_dir }}/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092"
+  register: kafka_health
+  changed_when: false

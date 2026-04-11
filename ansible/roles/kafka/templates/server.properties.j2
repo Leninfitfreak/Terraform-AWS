@@ -1,0 +1,20 @@
+# Kafka server.properties (staging)
+process.roles=broker,controller
+node.id={{ kafka_node_id }}
+controller.quorum.voters={{ kafka_node_id }}@localhost:9093
+
+listeners={{ kafka_listeners }},CONTROLLER://0.0.0.0:9093
+advertised.listeners={{ kafka_advertised_listeners }}
+listener.security.protocol.map=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+controller.listener.names=CONTROLLER
+inter.broker.listener.name=PLAINTEXT
+
+log.dirs={{ kafka_data_dir }}
+num.partitions=3
+default.replication.factor=1
+offsets.topic.replication.factor=1
+transaction.state.log.replication.factor=1
+transaction.state.log.min.isr=1
+
+auto.create.topics.enable=false
+delete.topic.enable=true
