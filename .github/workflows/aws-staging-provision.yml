@@ -38,10 +38,8 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::385074783484:role/leninkart-terraform-github-oidc-role
           aws-region: us-east-1
-      - name: Install Terraform (Chocolatey)
-        shell: cmd
-        run: choco install terraform -y
-
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
       - name: Terraform Init
         shell: cmd
         run: terraform -chdir=envs/${{ inputs.environment }} init -input=false
@@ -53,6 +51,8 @@ jobs:
       - name: Terraform Apply
         shell: cmd
         run: terraform -chdir=envs/${{ inputs.environment }} apply -auto-approve -input=false -var-file=terraform.tfvars
+
+
 
 
 
