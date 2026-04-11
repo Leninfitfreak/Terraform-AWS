@@ -38,13 +38,14 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::385074783484:role/leninkart-terraform-github-oidc-role
           aws-region: us-east-1
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: Install Terraform (Chocolatey)
+        shell: cmd
+        run: choco install terraform -y
 
       - name: Terraform Init
         run: terraform -chdir=envs/${{ inputs.environment }} init -input=false
 
       - name: Terraform Destroy
         run: terraform -chdir=envs/${{ inputs.environment }} destroy -auto-approve -input=false -var-file=terraform.tfvars
+
 
