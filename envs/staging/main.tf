@@ -227,6 +227,7 @@ resource "aws_eks_cluster" "staging" {
     subnet_ids         = [aws_subnet.public.id, aws_subnet.public_2.id]
     security_group_ids = [aws_security_group.eks_cluster_sg[0].id]
   }
+}
 
 locals {
   eks_cluster_name     = var.create_eks_resources ? aws_eks_cluster.staging[0].name : data.aws_eks_cluster.staging[0].name
@@ -347,6 +348,8 @@ resource "aws_eks_addon" "ebs_csi" {
     aws_eks_node_group.staging
   ]
 }
+
+
 
 
 
