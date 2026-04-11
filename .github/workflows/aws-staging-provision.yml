@@ -1,6 +1,7 @@
 name: AWS Staging Provision
 
 on:
+  # re-register workflow_dispatch
   workflow_dispatch:
     inputs:
       environment:
