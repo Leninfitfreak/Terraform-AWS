@@ -4,3 +4,4 @@
 *.tfvars
 *.pem
 teardown-snapshot.json
+!envs/staging/terraform.tfvars
