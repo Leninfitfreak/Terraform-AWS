@@ -149,8 +149,14 @@ resource "aws_instance" "kafka" {
 }
 
 # --- EKS (staging) ---
+data "aws_iam_role" "eks_cluster_role" {
+  count = var.create_eks_cluster_role ? 0 : 1
+  name  = "leninkart-staging-eks-cluster-role"
+}
+
 resource "aws_iam_role" "eks_cluster_role" {
-  name = "leninkart-staging-eks-cluster-role"
+  count = var.create_eks_cluster_role ? 1 : 0
+  name  = "leninkart-staging-eks-cluster-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
@@ -164,13 +170,19 @@ resource "aws_iam_role" "eks_cluster_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
-  role       = aws_iam_role.eks_cluster_role.name
+  count      = var.create_eks_cluster_role ? 1 : 0
+  role       = aws_iam_role.eks_cluster_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
 
 resource "aws_iam_role_policy_attachment" "eks_cluster_vpc_controller" {
-  role       = aws_iam_role.eks_cluster_role.name
+  count      = var.create_eks_cluster_role ? 1 : 0
+  role       = aws_iam_role.eks_cluster_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
+}
+
+locals {
+  eks_cluster_role_arn = var.create_eks_cluster_role ? aws_iam_role.eks_cluster_role[0].arn : data.aws_iam_role.eks_cluster_role[0].arn
 }
 
 resource "aws_security_group" "eks_cluster_sg" {
@@ -200,7 +212,7 @@ resource "aws_security_group" "eks_cluster_sg" {
 
 resource "aws_eks_cluster" "staging" {
   name     = var.eks_cluster_name
-  role_arn = aws_iam_role.eks_cluster_role.arn
+  role_arn = local.eks_cluster_role_arn
   version  = var.eks_cluster_version
 
   vpc_config {
@@ -214,8 +226,14 @@ resource "aws_eks_cluster" "staging" {
   ]
 }
 
+data "aws_iam_role" "eks_node_role" {
+  count = var.create_eks_node_role ? 0 : 1
+  name  = "leninkart-staging-eks-node-role"
+}
+
 resource "aws_iam_role" "eks_node_role" {
-  name = "leninkart-staging-eks-node-role"
+  count = var.create_eks_node_role ? 1 : 0
+  name  = "leninkart-staging-eks-node-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
@@ -229,24 +247,31 @@ resource "aws_iam_role" "eks_node_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "eks_node_worker" {
-  role       = aws_iam_role.eks_node_role.name
+  count      = var.create_eks_node_role ? 1 : 0
+  role       = aws_iam_role.eks_node_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
 }
 
 resource "aws_iam_role_policy_attachment" "eks_node_cni" {
-  role       = aws_iam_role.eks_node_role.name
+  count      = var.create_eks_node_role ? 1 : 0
+  role       = aws_iam_role.eks_node_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 
 resource "aws_iam_role_policy_attachment" "eks_node_ecr" {
-  role       = aws_iam_role.eks_node_role.name
+  count      = var.create_eks_node_role ? 1 : 0
+  role       = aws_iam_role.eks_node_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+locals {
+  eks_node_role_arn = var.create_eks_node_role ? aws_iam_role.eks_node_role[0].arn : data.aws_iam_role.eks_node_role[0].arn
 }
 
 resource "aws_eks_node_group" "staging" {
   cluster_name    = aws_eks_cluster.staging.name
   node_group_name = "leninkart-staging-ng"
-  node_role_arn   = aws_iam_role.eks_node_role.arn
+  node_role_arn   = local.eks_node_role_arn
   subnet_ids      = [aws_subnet.public.id, aws_subnet.public_2.id]
   instance_types  = [var.eks_node_instance_type]
 
@@ -309,4 +334,5 @@ resource "aws_eks_addon" "ebs_csi" {
     aws_eks_node_group.staging
   ]
 }
+
 

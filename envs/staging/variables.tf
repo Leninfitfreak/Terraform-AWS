@@ -111,3 +111,15 @@ variable "create_github_oidc_role" {
   description = "Whether to create the GitHub Actions OIDC IAM role"
   default     = false
 }
+
+variable "create_eks_cluster_role" {
+  type        = bool
+  description = "Whether to create the EKS cluster IAM role"
+  default     = false
+}
+
+variable "create_eks_node_role" {
+  type        = bool
+  description = "Whether to create the EKS node IAM role"
+  default     = false
+}

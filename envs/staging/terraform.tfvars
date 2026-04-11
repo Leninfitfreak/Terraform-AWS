@@ -22,3 +22,6 @@ github_repo = "Leninfitfreak/Terraform-AWS"
 github_branch = "main"
 create_github_oidc_provider = false
 create_github_oidc_role = false
+create_instance_profile = false
+create_eks_cluster_role = false
+create_eks_node_role = false
