@@ -24,17 +24,17 @@ output "public_subnet_id" {
 }
 
 output "eks_cluster_name" {
-  value       = aws_eks_cluster.staging.name
+  value       = local.eks_cluster_name
   description = "EKS cluster name"
 }
 
 output "eks_cluster_endpoint" {
-  value       = aws_eks_cluster.staging.endpoint
+  value       = local.eks_cluster_endpoint
   description = "EKS cluster API endpoint"
 }
 
 output "eks_node_group_status" {
-  value       = aws_eks_node_group.staging.status
+  value       = var.create_eks_resources ? aws_eks_node_group.staging[0].status : null
   description = "EKS node group status"
 }
 output "github_oidc_role_arn" {
@@ -46,3 +46,4 @@ output "github_oidc_provider_arn" {
   value       = local.github_oidc_provider_arn
   description = "GitHub Actions OIDC provider ARN"
 }
+

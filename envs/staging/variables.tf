@@ -123,3 +123,9 @@ variable "create_eks_node_role" {
   description = "Whether to create the EKS node IAM role"
   default     = false
 }
+
+variable "create_eks_resources" {
+  type        = bool
+  description = "Whether to create EKS cluster, node group, and addons"
+  default     = false
+}

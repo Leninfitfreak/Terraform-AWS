@@ -25,3 +25,4 @@ create_github_oidc_role = false
 create_instance_profile = false
 create_eks_cluster_role = false
 create_eks_node_role = false
+create_eks_resources = false
