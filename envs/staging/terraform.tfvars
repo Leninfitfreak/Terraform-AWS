@@ -22,11 +22,13 @@ github_repo = "Leninfitfreak/Terraform-AWS"
 github_branch = "main"
 create_github_oidc_provider = false
 create_github_oidc_role = false
-create_instance_profile = false
-create_eks_cluster_role = false
-create_eks_node_role = false
-create_eks_resources = false
-create_network = false
-existing_vpc_id = "vpc-0a0500ce655b33649"
-existing_public_subnet_id = "subnet-05582ca2093b38101"
-existing_public_subnet_2_id = "subnet-061911f489882440c"
+create_instance_profile = true
+create_eks_cluster_role = true
+create_eks_node_role = true
+create_eks_resources = true
+create_network = true
+existing_vpc_id = ""
+existing_public_subnet_id = ""
+existing_public_subnet_2_id = ""
+
+

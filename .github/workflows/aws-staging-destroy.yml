@@ -23,7 +23,13 @@ permissions:
 
 jobs:
   destroy:
-    runs-on: ubuntu-latest
+    runs-on:
+      - self-hosted
+      - Windows
+      - X64
+      - leninkart
+      - local
+      - dev
     steps:
       - uses: actions/checkout@v4
 
@@ -41,3 +47,4 @@ jobs:
 
       - name: Terraform Destroy
         run: terraform -chdir=envs/${{ inputs.environment }} destroy -auto-approve -input=false -var-file=terraform.tfvars
+
