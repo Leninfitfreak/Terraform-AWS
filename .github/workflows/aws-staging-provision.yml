@@ -42,15 +42,17 @@ jobs:
         uses: hashicorp/setup-terraform@v3
       - name: Terraform Init
         shell: cmd
-        run: terraform -chdir=envs/${{ inputs.environment }} init -input=false
+        run: "%TERRAFORM_CLI_PATH%\\terraform.exe" -chdir=envs/${{ inputs.environment }} init -input=false
 
       - name: Terraform Plan
         shell: cmd
-        run: terraform -chdir=envs/${{ inputs.environment }} plan -input=false -var-file=terraform.tfvars
+        run: "%TERRAFORM_CLI_PATH%\\terraform.exe" -chdir=envs/${{ inputs.environment }} plan -input=false -var-file=terraform.tfvars
 
       - name: Terraform Apply
         shell: cmd
-        run: terraform -chdir=envs/${{ inputs.environment }} apply -auto-approve -input=false -var-file=terraform.tfvars
+        run: "%TERRAFORM_CLI_PATH%\\terraform.exe" -chdir=envs/${{ inputs.environment }} apply -auto-approve -input=false -var-file=terraform.tfvars
+
+
 
 
 

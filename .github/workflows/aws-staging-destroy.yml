@@ -42,11 +42,12 @@ jobs:
         uses: hashicorp/setup-terraform@v3
       - name: Terraform Init
         shell: cmd
-        run: terraform -chdir=envs/${{ inputs.environment }} init -input=false
+        run: "%TERRAFORM_CLI_PATH%\\terraform.exe" -chdir=envs/${{ inputs.environment }} init -input=false
 
       - name: Terraform Destroy
         shell: cmd
-        run: terraform -chdir=envs/${{ inputs.environment }} destroy -auto-approve -input=false -var-file=terraform.tfvars
+        run: "%TERRAFORM_CLI_PATH%\\terraform.exe" -chdir=envs/${{ inputs.environment }} destroy -auto-approve -input=false -var-file=terraform.tfvars
+
 
 
 
