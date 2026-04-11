@@ -8,6 +8,7 @@ data "tls_certificate" "eks_oidc" {
 }
 
 resource "aws_vpc" "main" {
+  count = var.create_network ? 1 : 0
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
@@ -17,14 +18,16 @@ resource "aws_vpc" "main" {
 }
 
 resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.main.id
+  count = var.create_network ? 1 : 0
+  vpc_id = aws_vpc.main[0].id
   tags = {
     Name = "leninkart-staging-igw"
   }
 }
 
 resource "aws_subnet" "public" {
-  vpc_id                  = aws_vpc.main.id
+  count = var.create_network ? 1 : 0
+  vpc_id                  = aws_vpc.main[0].id
   cidr_block              = var.public_subnet_cidr
   availability_zone       = var.public_subnet_az
   map_public_ip_on_launch = true
@@ -34,7 +37,8 @@ resource "aws_subnet" "public" {
 }
 
 resource "aws_subnet" "public_2" {
-  vpc_id                  = aws_vpc.main.id
+  count = var.create_network ? 1 : 0
+  vpc_id                  = aws_vpc.main[0].id
   cidr_block              = var.public_subnet_2_cidr
   availability_zone       = var.public_subnet_2_az
   map_public_ip_on_launch = true
@@ -43,11 +47,18 @@ resource "aws_subnet" "public_2" {
   }
 }
 
+locals {
+  vpc_id = var.create_network ? aws_vpc.main[0].id : var.existing_vpc_id
+  public_subnet_id = var.create_network ? aws_subnet.public[0].id : var.existing_public_subnet_id
+  public_subnet_2_id = var.create_network ? aws_subnet.public_2[0].id : var.existing_public_subnet_2_id
+}
+
 resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.main.id
+  count = var.create_network ? 1 : 0
+  vpc_id = aws_vpc.main[0].id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igw.id
+    gateway_id = aws_internet_gateway.igw[0].id
   }
   tags = {
     Name = "leninkart-staging-public-rt"
@@ -55,19 +66,21 @@ resource "aws_route_table" "public" {
 }
 
 resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.public.id
-  route_table_id = aws_route_table.public.id
+  count = var.create_network ? 1 : 0
+  subnet_id      = aws_subnet.public[0].id
+  route_table_id = aws_route_table.public[0].id
 }
 
 resource "aws_route_table_association" "public_2" {
-  subnet_id      = aws_subnet.public_2.id
-  route_table_id = aws_route_table.public.id
+  count = var.create_network ? 1 : 0
+  subnet_id      = aws_subnet.public_2[0].id
+  route_table_id = aws_route_table.public[0].id
 }
 
 resource "aws_security_group" "kafka_sg" {
   name        = "leninkart-staging-kafka-sg"
   description = "Kafka EC2 security group"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = local.vpc_id
 
   ingress {
     description = "Kafka PLAINTEXT"
@@ -137,7 +150,7 @@ data "aws_ami" "amazon_linux" {
 resource "aws_instance" "kafka" {
   ami                         = data.aws_ami.amazon_linux.id
   instance_type               = var.kafka_instance_type
-  subnet_id                   = aws_subnet.public.id
+  subnet_id                   = local.public_subnet_id
   vpc_security_group_ids      = [aws_security_group.kafka_sg.id]
   key_name                    = var.ssh_key_name
   associate_public_ip_address = true
@@ -190,7 +203,7 @@ resource "aws_security_group" "eks_cluster_sg" {
   count = var.create_eks_resources ? 1 : 0
   name        = "leninkart-staging-eks-cluster-sg"
   description = "EKS control plane security group"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = local.vpc_id
 
   ingress {
     description = "Kubernetes API"
@@ -224,7 +237,7 @@ resource "aws_eks_cluster" "staging" {
   version  = var.eks_cluster_version
 
   vpc_config {
-    subnet_ids         = [aws_subnet.public.id, aws_subnet.public_2.id]
+    subnet_ids         = [local.public_subnet_id, local.public_subnet_2_id]
     security_group_ids = [aws_security_group.eks_cluster_sg[0].id]
   }
 }
@@ -282,7 +295,7 @@ resource "aws_eks_node_group" "staging" {
   cluster_name    = local.eks_cluster_name
   node_group_name = "leninkart-staging-ng"
   node_role_arn   = local.eks_node_role_arn
-  subnet_ids      = [aws_subnet.public.id, aws_subnet.public_2.id]
+  subnet_ids      = [local.public_subnet_id, local.public_subnet_2_id]
   instance_types  = [var.eks_node_instance_type]
 
   scaling_config {
@@ -348,12 +361,3 @@ resource "aws_eks_addon" "ebs_csi" {
     aws_eks_node_group.staging
   ]
 }
-
-
-
-
-
-
-
-
-

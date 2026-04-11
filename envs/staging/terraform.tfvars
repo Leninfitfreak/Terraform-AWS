@@ -26,3 +26,7 @@ create_instance_profile = false
 create_eks_cluster_role = false
 create_eks_node_role = false
 create_eks_resources = false
+create_network = false
+existing_vpc_id = "vpc-0a0500ce655b33649"
+existing_public_subnet_id = "subnet-05582ca2093b38101"
+existing_public_subnet_2_id = "subnet-061911f489882440c"

@@ -14,12 +14,12 @@ output "kafka_private_ip" {
 }
 
 output "vpc_id" {
-  value       = aws_vpc.main.id
+  value       = local.vpc_id
   description = "VPC ID"
 }
 
 output "public_subnet_id" {
-  value       = aws_subnet.public.id
+  value       = local.public_subnet_id
   description = "Public subnet ID"
 }
 
@@ -46,4 +46,5 @@ output "github_oidc_provider_arn" {
   value       = local.github_oidc_provider_arn
   description = "GitHub Actions OIDC provider ARN"
 }
+
 

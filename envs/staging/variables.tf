@@ -129,3 +129,27 @@ variable "create_eks_resources" {
   description = "Whether to create EKS cluster, node group, and addons"
   default     = false
 }
+
+variable "create_network" {
+  type        = bool
+  description = "Whether to create VPC + subnets + routing"
+  default     = true
+}
+
+variable "existing_vpc_id" {
+  type        = string
+  description = "Existing VPC ID to reuse when create_network is false"
+  default     = ""
+}
+
+variable "existing_public_subnet_id" {
+  type        = string
+  description = "Existing public subnet ID to reuse when create_network is false"
+  default     = ""
+}
+
+variable "existing_public_subnet_2_id" {
+  type        = string
+  description = "Existing second public subnet ID to reuse when create_network is false"
+  default     = ""
+}
