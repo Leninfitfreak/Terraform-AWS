@@ -181,7 +181,6 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_vpc_controller" {
   role       = aws_iam_role.eks_cluster_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
 }
-}
 
 locals {
   eks_cluster_role_arn = var.create_eks_cluster_role ? aws_iam_role.eks_cluster_role[0].arn : data.aws_iam_role.eks_cluster_role[0].arn
@@ -228,7 +227,6 @@ resource "aws_eks_cluster" "staging" {
     subnet_ids         = [aws_subnet.public.id, aws_subnet.public_2.id]
     security_group_ids = [aws_security_group.eks_cluster_sg[0].id]
   }
-}
 
 locals {
   eks_cluster_name     = var.create_eks_resources ? aws_eks_cluster.staging[0].name : data.aws_eks_cluster.staging[0].name
@@ -272,7 +270,6 @@ resource "aws_iam_role_policy_attachment" "eks_node_ecr" {
   count      = var.create_eks_node_role ? 1 : 0
   role       = aws_iam_role.eks_node_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-}
 }
 
 locals {
@@ -350,6 +347,7 @@ resource "aws_eks_addon" "ebs_csi" {
     aws_eks_node_group.staging
   ]
 }
+
 
 
 
