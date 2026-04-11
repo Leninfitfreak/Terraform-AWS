@@ -19,5 +19,6 @@ eks_node_max_size = 3
 public_subnet_2_cidr = "10.20.2.0/24"
 public_subnet_2_az = "us-east-1b"
 github_repo = "Leninfitfreak/Terraform-AWS"
-github_branch = "main"create_github_oidc_provider = false
+github_branch = "main"
+create_github_oidc_provider = false
 create_github_oidc_role = false
