@@ -38,11 +38,11 @@ output "eks_node_group_status" {
   description = "EKS node group status"
 }
 output "github_oidc_role_arn" {
-  value       = aws_iam_role.github_oidc_role.arn
+  value       = local.github_oidc_role_arn
   description = "GitHub OIDC IAM role ARN for Terraform-AWS workflows"
 }
 
 output "github_oidc_provider_arn" {
-  value       = aws_iam_openid_connect_provider.github.arn
+  value       = local.github_oidc_provider_arn
   description = "GitHub Actions OIDC provider ARN"
 }

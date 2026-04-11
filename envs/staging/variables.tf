@@ -100,3 +100,14 @@ variable "oidc_thumbprint" {
   description = "OIDC thumbprint for token.actions.githubusercontent.com"
   default     = "6938fd4d98bab03faadb97b34396831e3780aea1"
 }
+variable "create_github_oidc_provider" {
+  type        = bool
+  description = "Whether to create the GitHub Actions OIDC provider"
+  default     = false
+}
+
+variable "create_github_oidc_role" {
+  type        = bool
+  description = "Whether to create the GitHub Actions OIDC IAM role"
+  default     = false
+}
