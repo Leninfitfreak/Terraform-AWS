@@ -43,12 +43,16 @@ jobs:
         run: choco install terraform -y
 
       - name: Terraform Init
+        shell: cmd
         run: terraform -chdir=envs/${{ inputs.environment }} init -input=false
 
       - name: Terraform Plan
+        shell: cmd
         run: terraform -chdir=envs/${{ inputs.environment }} plan -input=false -var-file=terraform.tfvars
 
       - name: Terraform Apply
+        shell: cmd
         run: terraform -chdir=envs/${{ inputs.environment }} apply -auto-approve -input=false -var-file=terraform.tfvars
+
 
 

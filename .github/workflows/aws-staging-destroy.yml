@@ -43,9 +43,12 @@ jobs:
         run: choco install terraform -y
 
       - name: Terraform Init
+        shell: cmd
         run: terraform -chdir=envs/${{ inputs.environment }} init -input=false
 
       - name: Terraform Destroy
+        shell: cmd
         run: terraform -chdir=envs/${{ inputs.environment }} destroy -auto-approve -input=false -var-file=terraform.tfvars
+
 
 
