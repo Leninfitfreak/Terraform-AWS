@@ -1,0 +1,55 @@
+name: AWS Staging Provision
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        default: staging
+        type: string
+      component:
+        description: Target component (optional, informational)
+        required: false
+        type: string
+      action:
+        description: Action name (optional)
+        required: false
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  provision:
+    runs-on:
+      - self-hosted
+      - Windows
+      - X64
+      - leninkart
+      - local
+      - dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::385074783484:role/leninkart-terraform-github-oidc-role
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        shell: cmd
+        run: "%TERRAFORM_CLI_PATH%\\terraform.exe" -chdir=envs/${{ inputs.environment }} init -input=false
+
+      - name: Terraform Plan
+        shell: cmd
+        run: "%TERRAFORM_CLI_PATH%\\terraform.exe" -chdir=envs/${{ inputs.environment }} plan -input=false -var-file=terraform.tfvars
+
+      - name: Terraform Apply
+        shell: cmd
+        run: "%TERRAFORM_CLI_PATH%\\terraform.exe" -chdir=envs/${{ inputs.environment }} apply -auto-approve -input=false -var-file=terraform.tfvars
